@@ -3,8 +3,35 @@ import { Link, Route, Routes } from 'react-router-dom';
 import Inventario from './pages/Inventario';
 import Home from './pages/Home';
 import ListaSpesa from './pages/ListaSpesa';
+import { messaging, getToken, onMessage } from "./firebase";
+import { useEffect } from 'react';
+
+const vapidKey = "BLgRctNS0WtXuiyX2CSYqQZL6fAFJ47q_OH-ANGmV95u5V-eQVIZq69-d_7WlFeRLPwTF5XrlcuV3t-qsUJz8y0";
 
 function App() {
+
+  useEffect(() => {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        getToken(messaging, { vapidKey }).then((currentToken) => {
+          if (currentToken) {
+            console.log("FCM Token:", currentToken);
+            // Salva questo token nel tuo DB per inviare notifiche
+          } else {
+            console.warn("Nessun token disponibile. Richiedi il permesso.");
+          }
+        }).catch((err) => {
+          console.error("Errore nel recuperare il token:", err);
+        });
+      }
+    });
+
+    onMessage(messaging, (payload) => {
+      console.log("Messaggio ricevuto in foreground:", payload);
+      // Mostra una notifica personalizzata in app, se vuoi
+    });
+  }, []);
+
   return (
     <div>
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
